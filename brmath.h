@@ -167,6 +167,8 @@ namespace br
 	};
 
 	// generic Tree Node
+	// Deprecated, not much use
+	// TO-DO: update code for bt, then remove
 	template<class T>
 	struct node
 	{
@@ -186,73 +188,124 @@ namespace br
 		{
 			if (children == nullptr)
 			{
-				children = new node<T>[_amount](this);
+				children = new node<T>[_amount];
+				for (int i = 0; i < _amount; ++i)
+					children[i].parent = this;
 				childrenSize = _amount;
 			}
 		}
 
 		// Instantiate node with values
 		node(T _data) : data{ _data }, parent{ nullptr }, children{ nullptr }, childrenSize{ 0 } {}
-		node(node& _parent) : data{ 0 }, parent{ _parent }, children{ nullptr }, childrenSize{ 0 } {}
+		node(node& _parent) : data{ T() }, parent{ _parent }, children{ nullptr }, childrenSize{ 0 } {}
 		// Default construction
-		node() : data{ 0 }, parent{ nullptr }, children{ nullptr }, childrenSize{ 0 } {}
+		node() : data{ T() }, parent{ nullptr }, children{ nullptr }, childrenSize{ 0 } {}
 		// Destruction
 		~node()
 		{
 			delete[] children;
+			children = nullptr;
+		}
+	};
+
+	// generic Binary Tree Node
+	// TO-DO: optimize for bt functions
+	template<class T>
+	class btNode
+	{
+	private:
+		// Left and right children
+		btNode<T>* left, *right;
+
+		// Parent of node
+		btNode<T>* parent;
+
+	public:
+
+		// Node data
+		T data;
+
+		// Create a new node
+		// _side = 0; left
+		// _side = 1; right
+		void createNode(bool _side, T _data = T())
+		{
+			if (!_side)
+			{
+				if (left == nullptr)
+					left = new btNode(_data, this);
+			}
+			else
+			{
+				if (right == nullptr)
+					right = new btNode(_data, this);
+			}
+		}
+
+		// Get a node
+		// _side = 0; left
+		// _side = 1; right
+		btNode<T>* getNode(bool _side)
+		{
+			return (!_side ? left : right);
+		}
+
+		// Instantiate btNode with values
+		btNode(T _data) : data{ _data }, left{ nullptr }, right{ nullptr }, parent{ nullptr } {}
+		btNode(btNode<T>* _parent) : data{ T() }, left{ nullptr }, right{ nullptr }, parent{ _parent } {}
+		btNode(T _data, btNode<T>* _parent) : data{ _data }, left{ nullptr }, right{ nullptr }, parent{ _parent } {}
+		// Default construction
+		btNode() : data{ T() }, left{ nullptr }, right{ nullptr }, parent{ nullptr } {}
+		// Destruction
+		~btNode()
+		{
+			delete left;
+			left = nullptr;
+			delete right;
+			right = nullptr;
 		}
 	};
 
 	// generic Binary Tree
+	// TO-DO: Finish up traversal/search functions
 	template<class T>
 	class bt
 	{
+	public:
 		// Start of tree
-		node<T> root;
-		// Max depth of tree
-		int maxDepth;
+		btNode<T> root;
+
+	private:
+		// Size of the tree
+		int size, rSize;
 
 	public:
 
-		/*	TODO:
-		*	Implement Binary Tree traversal properly,
-		*	Depth search & Breadth search (& maybe full generic search too)
-		* 
-		node<T>& traverseNode(node<T>& _base, int _curDepth, int _depth, int _branch, bool _side)
+		// Preorder traversal of tree via depth
+		void traDepthPO(btNode<T>* _node)
 		{
-			if (_base.parent != nullptr && _base.childrenSize == 0)
-			{
-				_base = _base.parent;
-				_side = !_side;
-				--_curDepth;
-			}
-			else
-			{
-				_base = _base.children[_side];
-				++_curDepth;
-			}
+			if (_node == nullptr)
+				return;
 
-			if (_curDepth == _depth)
-				--_branch;
-			if (_branch <= 0)
-				return _base;
-			traverseNode(_base, _curDepth, _depth, _branch, _side);
+			++rSize;
+			if (size < rSize)
+				size = rSize;
+
+			traDepthPO(_node->getNode(0));
+			traDepthPO(_node->getNode(1));
 		}
 
-		node<T>& getNode(int _depth, int _branch)
+		// Get size of tree
+		int getSize()
 		{
-			node<T>* stack = root;
-			for (int i = 0; i < _depth - 1; ++i)
-			{
-				stack = stack->children[0];
-			}
+			return size;
 		}
-		*/
+		
 
 		// Instantiate bt with values
-		bt(T _data) : root(_data), maxDepth{ 0 } {}
+		bt(T _data) : root(_data), size{ 0 }, rSize{ 0 } {}
 		// Default construction
-		bt() : maxDepth{ 0 } {}
+		bt() : size{ 0 }, rSize{ 0 } {}
 	};
 }
 
